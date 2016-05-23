@@ -59,7 +59,7 @@ public class UserDaoImpl implements UserDao {
 	public User findById(int id) {
 		return jdbcTemplate.queryForObject(
 				"select * from USER where idUSER=:id",
-				new MapSqlParameterSource("idUSER", id), new UserRowMapper());
+				new MapSqlParameterSource("id", id), new UserRowMapper());
 	}
 
 	@Override

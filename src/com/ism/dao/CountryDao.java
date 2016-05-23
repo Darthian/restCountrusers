@@ -6,7 +6,7 @@ import com.ism.entity.Country;
 
 public interface CountryDao {
 	
-	public boolean save(Country country);
+	public void save(Country country);
 
 	public List<Country> findAll();
 
@@ -14,10 +14,10 @@ public interface CountryDao {
 
 	public List<Country> findByName(String name);
 
-	public boolean update(Country country);
+	public void update(Country country);
 
-	public boolean delete(int idCountry);
+	public void delete(Country country);
 
-	public int[] saveAll(List<Country> countries);
+//	public int[] saveAll(List<Country> countries);
 
 }

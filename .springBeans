@@ -9,6 +9,7 @@
 	<configs>
 		<config>WebContent/WEB-INF/dispatcher-servlet.xml</config>
 		<config>src/com/ism/config/persistence-context.xml</config>
+		<config>src/com/ism/config/service-context.xml</config>
 	</configs>
 	<autoconfigs>
 	</autoconfigs>
