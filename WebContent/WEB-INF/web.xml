@@ -28,6 +28,7 @@
   	<param-name>contextConfigLocation</param-name>
   	<param-value>
   		classpath:com/ism/config/persistence-context.xml
+  		classpath:com/ism/config/service-context.xml
   	</param-value>
   </context-param>
   

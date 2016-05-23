@@ -1,87 +1,63 @@
 package com.ism.dao;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 
-import javax.sql.DataSource;
-
+import org.hibernate.Criteria;
+import org.hibernate.Query;
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
+import org.hibernate.criterion.Restrictions;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.jdbc.core.RowMapper;
-import org.springframework.jdbc.core.namedparam.BeanPropertySqlParameterSource;
-import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
-import org.springframework.jdbc.core.namedparam.SqlParameterSource;
-import org.springframework.jdbc.core.namedparam.SqlParameterSourceUtils;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.ism.entity.Country;
-import com.ism.entity.CountryRowMapper;
 
-@Component("countryDao")
+@Transactional
+@Repository
 public class CountryDaoImpl implements CountryDao {
-	
-	private NamedParameterJdbcTemplate jdbcTemplate;
 
 	@Autowired
-	private void setDataSource(DataSource dataSource) {
-		this.jdbcTemplate = new NamedParameterJdbcTemplate(dataSource);
+	SessionFactory sessionFactory;
+
+	public Session getSession() {
+		return this.sessionFactory.getCurrentSession();
 	}
 
 	@Override
-	public boolean save(Country country) {
-		BeanPropertySqlParameterSource paramMap = new BeanPropertySqlParameterSource(country);
-
-		return jdbcTemplate.update("insert into COUNTRY (NAME, DEPARTMENT, CITY) values (:name, :department, :city)", paramMap) == 1;
+	public void save(Country country) {
+		getSession().save(country);
 	}
 
 	@Override
 	public List<Country> findAll() {
-		return jdbcTemplate.query("select * from COUNTRY",
-				new RowMapper<Country>() {
-
-					@Override
-					public Country mapRow(ResultSet rs, int rowNum)
-							throws SQLException {
-						Country country = new Country();
-						country.setIdCountry(rs.getInt("idCountry"));
-						country.setName(rs.getString("name"));
-						country.setDepartment(rs.getString("department"));
-						country.setCity(rs.getString("city"));
-						return country;
-					}
-				});
+		Query query = getSession().createQuery("from Country");
+		return query.list();
 	}
 
 	@Override
 	public Country findById(int id) {
-		return jdbcTemplate.queryForObject(
-				"select * from COUNTRY where idCOUNTRY=:id",
-				new MapSqlParameterSource("idCOUNTRY", id), new CountryRowMapper());
+		Criteria criteria = getSession().createCriteria(Country.class);
+		criteria.add(Restrictions.eq("idCountry", id));
+		return (Country) criteria.uniqueResult();
 	}
 
 	@Override
 	public List<Country> findByName(String name) {
-		return jdbcTemplate.query(
-				"select * from COUNTRY where NAME like :name", new MapSqlParameterSource("name", "%" + name + "%"), new CountryRowMapper());
+		Criteria criteria = getSession().createCriteria(Country.class);
+		criteria.add(Restrictions.like("name", "%" + name + "%"));
+		return criteria.list();
 	}
 
 	@Override
-	public boolean update(Country country) {
-		return jdbcTemplate
-				.update("update COUNTRY set NAME=:name, DEPARTMENT=:department where idCOUNTRY=:idCountry", new BeanPropertySqlParameterSource(country)) == 1;
+	public void update(Country country) {
+		getSession().update(country);
 	}
 
 	@Override
-	public boolean delete(int idCountry) {
-		return jdbcTemplate.update("delete from COUNTRY where idCOUNTRY=:idCountry", new MapSqlParameterSource("idCOUNTRY", idCountry)) == 1;
-	}
-
-	@Override
-	public int[] saveAll(List<Country> countries) {
-		SqlParameterSource[] batchArgs = SqlParameterSourceUtils.createBatch(countries.toArray());
-
-		return jdbcTemplate.batchUpdate("insert into COUNTRY (idCOUNTRY, NAME, DEPARTMENT, CITY) values (:idCountry, :name, :department, :city)", batchArgs);
+	public void delete(Country country) {
+		getSession().delete(country);
 	}
 
 }
