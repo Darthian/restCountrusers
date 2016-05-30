@@ -51,6 +51,7 @@
 	
 	<c:forEach items="${countries}" var="country">
 		<br/><c:out value="${country}"></c:out>
+		<a href='<c:url value="/user/${country.idCountry}/" />'>Usuarios</a>
 		<a href='<c:url value="/country/${country.idCountry}/update" />'>Actualizar</a>
 		<a class="confirm" href='<c:url value="/country/${country.idCountry}/delete" />'>Eliminar</a>
 	</c:forEach>

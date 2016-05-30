@@ -1,90 +1,65 @@
 package com.ism.dao;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.List;
 
-import javax.sql.DataSource;
-
+import org.hibernate.Criteria;
+import org.hibernate.FetchMode;
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
+import org.hibernate.criterion.Restrictions;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.jdbc.core.RowMapper;
-import org.springframework.jdbc.core.namedparam.BeanPropertySqlParameterSource;
-import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
-import org.springframework.jdbc.core.namedparam.SqlParameterSource;
-import org.springframework.jdbc.core.namedparam.SqlParameterSourceUtils;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.ism.entity.Country;
 import com.ism.entity.User;
-import com.ism.entity.UserRowMapper;
 
-@Component("userDao")
+@Transactional
+@Repository
 public class UserDaoImpl implements UserDao {
 
-	private NamedParameterJdbcTemplate jdbcTemplate;
-
 	@Autowired
-	private void setDataSource(DataSource dataSource) {
-		this.jdbcTemplate = new NamedParameterJdbcTemplate(dataSource);
+	SessionFactory sessionFactory;
+
+	public Session getSession() {
+		return this.sessionFactory.getCurrentSession();
 	}
 
 	@Override
-	public boolean save(User user) {
-		BeanPropertySqlParameterSource paramMap = new BeanPropertySqlParameterSource(user);
-
-		return jdbcTemplate.update("insert into USER (NAME, PASSWORD) values (:name, :password)", paramMap) == 1;
+	public void save(User user) {
+		getSession().save(user);
 	}
 
 	@Override
-	public List<User> findAll() {
-		return jdbcTemplate.query("select * from USER",
-				new RowMapper<User>() {
-
-					@Override
-					public User mapRow(ResultSet rs, int rowNum)
-							throws SQLException {
-						User user = new User();
-
-						user.setIdUser(rs.getInt("idUser"));
-						user.setName(rs.getString("name"));
-						user.setPassword(rs.getString("password"));
-
-						return user;
-					}
-				});
+	public List<User> findAll(Country country) {
+		Criteria cr = getSession().createCriteria(User.class)
+				.setFetchMode("country", FetchMode.JOIN)
+				.add(Restrictions.eq("country.idCountry", country.getIdCountry()))
+				.setResultTransformer(Criteria.DISTINCT_ROOT_ENTITY);
+		return cr.list();
 	}
 
 	@Override
 	public User findById(int id) {
-		return jdbcTemplate.queryForObject(
-				"select * from USER where idUSER=:id",
-				new MapSqlParameterSource("id", id), new UserRowMapper());
+		Criteria cri = getSession().createCriteria(User.class);
+		cri.add(Restrictions.eq("idUser", id));
+		return (User) cri.uniqueResult();
 	}
 
 	@Override
 	public List<User> findByName(String name) {
-		return jdbcTemplate.query(
-				"select * from USER where NAME like :name", new MapSqlParameterSource("name", "%" + name + "%"), new UserRowMapper());
+		Criteria cri = getSession().createCriteria(User.class);
+		cri.add(Restrictions.like("name","%"+ name + "%"));
+		return cri.list();
 	}
 
 	@Override
-	public boolean update(User user) {
-		return jdbcTemplate
-				.update("update USER set NAME=:name, PASSWORD=:password where idUSER=:idUSER", new BeanPropertySqlParameterSource(user)) == 1;
+	public void update(User user) {
+		getSession().update(user);
 	}
 
 	@Override
-	public boolean delete(int idUser) {
-		return jdbcTemplate.update("delete from USER where idUSER=:idUser", new MapSqlParameterSource("idUser", idUser)) == 1;
+	public void delete(User user) {
+		getSession().delete(user);
 	}
-
-	@Transactional
-	@Override
-	public int[] saveAll(List<User> users) {
-		SqlParameterSource[] batchArgs = SqlParameterSourceUtils.createBatch(users.toArray());
-
-		return jdbcTemplate.batchUpdate("insert into USER (idUSER, NAME, PASSWORD) values (:idUser, :name, :password)", batchArgs);
-	}
-
 }
