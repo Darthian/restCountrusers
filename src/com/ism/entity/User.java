@@ -1,10 +1,31 @@
 package com.ism.entity;
 
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.Table;
+
+@Entity
+@Table(name="USER")
 public class User {
 
+	@Id
+	@GeneratedValue
+	@Column(name="idUSER")
 	private int idUser;
+	
+	@Column(name="NAME")
 	private String name;
+	
+	@Column(name="PASSWORD")
 	private String password;
+	
+	@ManyToOne
+	@JoinColumn(name="idCOUNTRY")
+	private Country country;
 	
 	public User(){
 		
@@ -49,5 +70,13 @@ public class User {
 	public String toString() {
 		return "User [idUser=" + idUser + ", name=" + name + ", password="
 				+ password + "]";
+	}
+
+	public Country getCountry() {
+		return country;
+	}
+
+	public void setCountry(Country country) {
+		this.country = country;
 	}
 }

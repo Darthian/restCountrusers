@@ -30,5 +30,9 @@
 	</sf:form>
 	<br/>
 	<c:out value="${result}"></c:out>
+	
+	<c:forEach items="${users}" var="user">
+		<br/><c:out value="${user}"></c:out>
+	</c:forEach>
 </body>
 </html>

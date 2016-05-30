@@ -1,9 +1,12 @@
 package com.ism.entity;
 
+import java.util.Set;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
 @Entity
@@ -23,6 +26,9 @@ public class Country {
 	
 	@Column(name="CITY")
 	private String city;
+	
+	@OneToMany(mappedBy="country")
+	private Set<User> users;
 	
 	public Country(){
 		
@@ -77,5 +83,13 @@ public class Country {
 	public String toString() {
 		return "Country [idCountry=" + idCountry + ", name=" + name
 				+ ", department=" + department + ", city=" + city + "]";
+	}
+
+	public Set<User> getUsers() {
+		return users;
+	}
+
+	public void setUsers(Set<User> users) {
+		this.users = users;
 	}
 }
